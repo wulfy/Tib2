@@ -1,10 +1,11 @@
 /**
 MANAGE SLIDESHOW OBJECTS
 
-
+@author:ludovic
 **/
 
 function slideshowObj() {
+
 	this.activePage;
 	this.slideshow;
 	this.pages;
