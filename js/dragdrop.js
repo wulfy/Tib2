@@ -26,6 +26,7 @@
 	
 	var currentDragItem = null;
 	var dragging = false;
+	var resizing = false;
 	var dragFromOutside = false;
 	var mouseX = 0;
 	var mouseY = 0;
@@ -33,7 +34,12 @@
 	var decalX = 0;
 	var initialDragItemLeft = 0;
 	var initialDragItemTop = 0;
-	
+	var dropbox = $id("draggable_area");
+	var currentDragTarget = dropbox;
+	var disableNextDrag = false;
+	/**
+	TOOLS
+	**/
 	function $id(id) {
 		return document.getElementById(id);
 	}
@@ -64,25 +70,6 @@
 		return returnArray;
 	}
 	
-	function mouse_down(id) {
-	 currentDragItem = $id(id);
-	 dragging = true;
-	 
-	// coordinate = getAbsolutePosition(currentDragItem);
-	 decalY = mouseY;
-	 decalX = mouseX;
-	 Output("dragging! "+ id + "offset X : " + currentDragItem.offsetLeft+ " offset Y : " + currentDragItem.offsetTop);
-	}
-	
-	function mouse_up(){
-		dragging = false;
-		currentDragItem = null;
-		//Output("stop dragging !");
-		decalY = 0;
-		decalX = 0;
-		
-	}
-	
 	function getFirstParentWithClass(elt)
 	{
 		var parent = null;
@@ -102,13 +89,110 @@
 		
 		return parent;
 	}
+	
+		
+	//HTML5 et inférieurs
+	function getElementsByClassName(classname, node) {
+		if(!node) node = document.getElementsByTagName("body")[0];
+			var a = [];
+			var re = new RegExp('\\b' + classname + '\\b');
+			var els = node.getElementsByTagName("*");
+			for(var i=0,j=els.length; i<j; i++)
+				if(re.test(els[i].className))
+					a.push(els[i]);
+		return a;
+    }
+	
+		
+	//HTML5
+	function getElementsByData(dataname, datavalue, node) {
+		if(!node) node = document.getElementsByTagName("body")[0];
+			var a = [];
+			var re = new RegExp('\\b' + datavalue + '\\b');
+			var els = node.getElementsByTagName("*");
+			for(var i=0,j=els.length; i<j; i++)
+				if(re.test(els[i].dataset.eval(dataname)))
+					a.push(els[i]);
+		return a;
+    }
+	
+	
+	function setElementPosToMouse(elt){
+		var parentPos = getAbsolutePosition(elt.parentNode);
+
+		elt.style.position = "absolute";	
+		elt.style.top = mouseY-(parentPos["top"]-document.body.scrollTop)-(elt.clientY/2)-120;
+		elt.style.left = mouseX-elt.clientWidth;
+		//alert(mouseY + " - " + (mouseY-(elt.parentNode.offsetTop-document.body.scrollTop)-elt.clientY) + " " +elt.parentNode.id+" " +elt.parentNode.offsetTop);
+	}
+	
+	function createNewElement(element,draggable){
+		var newElt = document.createElement(element);
+
+		currentDragTarget.appendChild(newElt);
+		setElementPosToMouse(newElt);
+		
+		if(draggable)
+			setElementDraggable(newElt);
+		
+		return newElt;
+	}
+	
+	function deleteTemporaryImage(elt){
+		var todelete = elt.getElementsByClassName("toremove");
+		
+		for(var i in todelete)
+		{	
+			elt.removeChild(todelete[i]);
+		}
+	}
+	
+	/**
+	* Movement management
+	**/
+	
+	function drag_drop_mouse_down(elt) {
+	 currentDragItem = elt;
+	 
+	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
+	 {
+		resizing = true;
+		Output("resizing! ");
+	 }
+	 else
+	 {
+		dragging = true;
+	 }
+	
+	// coordinate = getAbsolutePosition(currentDragItem);
+	 decalY = mouseY;
+	 decalX = mouseX;
+	 //Output("dragging! "+ id + "offset X : " + currentDragItem.offsetLeft+ " offset Y : " + currentDragItem.offsetTop);
+	}
+	
+	function drag_drop_mouse_up(){
+		dragging = false;
+		resizing = false;
+		if(currentDragItem)
+		{
+			currentDragItem.style.border="";
+			currentDragItem = null;
+		}
+		//Output("stop dragging !");
+		decalY = 0;
+		decalX = 0;
+	}
+	
 	var i = 0;
-	function mouse_move(evt) {
+	function drag_drop_mouse_move(evt) {
+		
 		mouseX = evt.clientX;
 		mouseY = evt.clientY;
-		i++;
+		i++; 
 		if(dragging && currentDragItem != null)
-		{
+		{ 
+			currentDragItem.style.border="solid 2px blue";
+			
 			//initialise si undifined
 			if(!currentDragItem.style.top)
 				currentDragItem.style.top = 0;
@@ -134,87 +218,99 @@
 			decalY = mouseY;
 			decalX = mouseX;
 			
-			 Output(currentDragItem.style.top + " - " + currentDragItem.style.left);
+			 Output("dragging");
+		}else if(resizing)
+		{	
+			currentDragItem.style.width = currentDragItem.offsetWidth + (mouseX - decalX);
+			currentDragItem.style.height = currentDragItem.offsetHeight + (mouseY - decalY);
+			Output("resizing");
 		}
-		Output(mouseX + " - " + mouseY );
+		
+		//Output(mouseX + " - " + mouseY );
 	}
-	
-	//HTML5 et inférieurs
-	function getElementsByClassName(classname, node) {
-		if(!node) node = document.getElementsByTagName("body")[0];
-			var a = [];
-			var re = new RegExp('\\b' + classname + '\\b');
-			var els = node.getElementsByTagName("*");
-			for(var i=0,j=els.length; i<j; i++)
-				if(re.test(els[i].className))
-					a.push(els[i]);
-		return a;
-    }
-	
-	//HTML5
-	function getElementsByData(dataname, datavalue, node) {
-		if(!node) node = document.getElementsByTagName("body")[0];
-			var a = [];
-			var re = new RegExp('\\b' + datavalue + '\\b');
-			var els = node.getElementsByTagName("*");
-			for(var i=0,j=els.length; i<j; i++)
-				if(re.test(els[i].dataset.eval(dataname)))
-					a.push(els[i]);
-		return a;
-    }
-	
-	function mouse_over(id) {
-		$id(id).style.border="solid 2px red";
-		document.body.style.cursor = "move";
+
+	function drag_drop_mouse_over(elt) {
+			Output(mouseX + " - " + mouseY + " -> " +elt.offsetTop + " "+ (elt.offsetHeight-100));
+		if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
+		{
+			 document.body.style.cursor = "w-resize";
+		}
+		else{
+			document.body.style.cursor = "move";
+		}
 	};
 	
-	function mouse_out(id) {
-		$id(id).style.border= "";
+	function drag_drop_mouse_out(elt) {
+		elt.style.border= "";
 		document.body.style.cursor = "default";
+		drag_drop_mouse_up();
 	};
 	
-	$id("draggable_area").addEventListener('mousemove', function(evt){
+
+	/**$id("draggable_area").addEventListener('mousemove', function(evt){
         var mousePos = mouse_move(evt);
     }, false);
 	$id("draggable_area").addEventListener('mouseup', function(evt){
         mouse_up();
-    }, false);
-	
-	var elements = getElementsByClassName("draggable");
-	
-	for(var i in elements)
+    }, false);**/
+		
+	function initExistingDraggable()
 	{
-		setElementDraggable(elements[i]);
-	}
-	
-	dropbox = $id("draggable_area");
-	
-	
-	var elements = getElementsByClassName("page");
-	for(var i in elements)
-	{
-		addDragEvent(elements[i]);
-	}
-	
-	function addDragEvent(elt)
-	{
-		elt.addEventListener("drop", drop, false);
-		elt.addEventListener("dragenter", dragenter, false);
-		elt.addEventListener("dragexit", dragExit, false);
-	}
-	
-	var currentDragTarget = dropbox;
-	
-	function setElementPosToMouse(elt){
-		var parentPos = getAbsolutePosition(elt.parentNode);
+		var elements = getElementsByClassName("draggable");
+		
+		for(var i in elements)
+		{
+			setElementDraggable(elements[i]);
+		}
 
-		elt.style.position = "absolute";	
-		elt.style.top = mouseY-(parentPos["top"]-document.body.scrollTop)-(elt.clientHeight/2)-120;
-		elt.style.left = mouseX-elt.clientWidth;
-		//alert(mouseY + " - " + (mouseY-(elt.parentNode.offsetTop-document.body.scrollTop)-elt.clientHeight) + " " +elt.parentNode.id+" " +elt.parentNode.offsetTop);
+		var elements = getElementsByClassName("page");
+		for(var i in elements)
+		{
+			addDragEvent(elements[i]);
+		}
 	}
 	
-	function setElementDraggable(elt){
+	function disableDragging(){
+	  dragging = true;
+	}
+	
+	function enableDragging(){
+		dragging = false;
+	}
+
+	function deleteElement(elt,confirmPopup){
+	
+		if(confirmPopup)
+		{
+			elt.style.border="solid 2px red";
+			disableNextDrag = true;
+			if (confirm("Voulez-vous vraiment supprimer l'element selectionne en rouge? ")) {
+				elt.parentNode.removeChild(elt);
+			}else
+			{
+				elt.style.border="";
+			}
+		}else
+		{
+			elt.parentNode.removeChild(elt);
+		}
+	}
+	
+	function addDeleteButton(elt)
+	{
+		var deleteButton = document.createElement("img");
+		deleteButton.src="img/delete.png";
+		deleteButton.setAttribute("class", "dragctrl bigimg");
+		deleteButton.style.top =  elt.offsetHeight;
+		deleteButton.style.left = 0;
+		elt.appendChild(deleteButton);
+		
+		deleteButton.addEventListener('mousedown', function(evt){
+			deleteElement(elt,true);
+		}, false);
+	}
+	
+	function setElementDraggable(elt,ctrl){
 		if((' ' + elt.className + ' ').indexOf(' ' + "draggable" + ' ') == -1)
 			elt.className += "draggable";
 
@@ -227,44 +323,67 @@
 				}
 			}
 		
-
-		elt.addEventListener('mousedown', function(evt){
-			mouse_down(elt.id);
-		}, true);
-		elt.addEventListener('mouseover', function(evt){
-			mouse_over(elt.id);
-		}, true);
-		elt.addEventListener('mouseout', function(evt){
-			mouse_out(elt.id);
-		}, true);
+		if(ctrl)
+		{
+			var moveButton = document.createElement("img");
+			moveButton.src="img/move.png";
+			moveButton.setAttribute("class", "dragctrl littleimg");
+			elt.appendChild(moveButton);
+			moveButton.style.top = -moveButton.offsetHeight;
+			moveButton.style.left = -moveButton.offsetWidth/2;
+			moveButton.addEventListener('mousedown', function(evt){
+			setCurrentDraggingElement(elt);
+			}, false);
+			
+		}
+			elt.addEventListener('mousedown', function(evt){
+				drag_drop_mouse_down(elt);
+			}, true);
+			elt.addEventListener('mouseover', function(evt){
+				drag_drop_mouse_over(elt);
+			}, true);
+			elt.addEventListener('mouseout', function(evt){
+				drag_drop_mouse_out(elt);
+			}, true);
 		
 		
 	}
 	
-	function createNewElement(element,draggable){
-		var newElt = document.createElement(element);
-
-		currentDragTarget.appendChild(newElt);
-		setElementPosToMouse(newElt);
-		
-		if(draggable)
-			setElementDraggable(newElt);
-		
-		return newElt;
+	function setCurrentDraggingElement(elt)
+	{
+		drag_drop_mouse_down(elt);
+	}
+	
+	function resetDragging()
+	{
+		drag_drop_mouse_up();
 	}
 	
 	
+	/**
+	EXTERNAL DRAG/DROP MANAGEMENT
+	**/
 	
+	//EVENT HANDLERS
 	
 	function dragenter(evt) {
+
 	  evt.stopPropagation();
 	  evt.preventDefault();
+		
+	if(dragging || resizing)
+		return;
+		
 	  this.style.border="solid 2px blue";
 	}
 	
 	function dragExit(evt) {
 	  evt.stopPropagation();
 	  evt.preventDefault();
+	  
+	  if(dragging || resizing)
+		return;
+		
 	  this.style.border="";
 	}
 	
@@ -272,27 +391,25 @@
 	  evt.stopPropagation();
 	  evt.preventDefault();
 	}
-	
-	
-	function deleteTemporaryImage(elt){
-		var todelete = elt.getElementsByClassName("toremove");
-		
-		for(var i in todelete)
-		{
-			elt.removeChild(todelete[i]);
-		}
-	}
-	
+
 	function drop(evt) {
 	
 	currentDragTarget = this;
 	evt.stopPropagation();
 	evt.preventDefault();
-	this.style.border="";
-	 if(dragging == true)
+	
+	if(dragging || resizing)
 		return;
+	
+	if(disableNextDrag)	
+	{
+		disableNextDrag = false;
+		return;
+	}
+	
+	this.style.border="";
 	 
-	 
+	
 	  var files = evt.dataTransfer.files;
 	  var count = files.length;
 	 
@@ -316,11 +433,18 @@
 	   //Output("Processing " + file.name);
 	   
 	}
+	//---------------------------------------
 	
+	function addDragEvent(elt)
+	{
+		elt.addEventListener("drop", drop, false);
+		elt.addEventListener("dragenter", dragenter, false);
+		elt.addEventListener("dragexit", dragExit, false);
+	}
 	
+	//file manager
 	function handleFiles(files) {
 		var file = files[0];
-
 		if(file)
 		{
 			var reader = new FileReader();
@@ -334,6 +458,7 @@
 		}
 	}
 
+	//file reader progress (not used)
 	function handleReaderProgress(evt) {
 		if (evt.lengthComputable) {
 			var loaded = (evt.loaded / evt.total);
@@ -342,6 +467,7 @@
 		}
 	}
 
+	//load event (not used, use it to get a loading bar)
 	function handleReaderLoadEnd(evt) {
 		//$("#progressbar").progressbar({ value: 100 });
 
@@ -352,8 +478,20 @@
 	}
 	
 	
-		// init event handlers
-	dropbox.addEventListener("dragenter", noopHandler, false);
-	dropbox.addEventListener("dragexit", dragExit, false);
-	dropbox.addEventListener("dragover", noopHandler, false);
-	dropbox.addEventListener("drop", drop, false);
+	// init event handlers
+	function initEvents()
+	{
+		dropbox.addEventListener("dragenter", noopHandler, false);
+		dropbox.addEventListener("dragexit", dragExit, false);
+		dropbox.addEventListener("dragover", noopHandler, false);
+		dropbox.addEventListener("drop", drop, false);
+		dropbox.addEventListener('mousemove', function(evt){
+        var mousePos = drag_drop_mouse_move(evt);
+		}, false);
+		dropbox.addEventListener('mouseup', function(evt){
+			drag_drop_mouse_up();
+		}, false);
+	}
+	
+	initEvents();
+	initExistingDraggable();
