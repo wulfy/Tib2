@@ -1,6 +1,7 @@
 #draggable_area {
 width:100%;
 height:100%;
+position:relative;
 /*border: solid 1px grey;*/
 }
 
@@ -16,6 +17,11 @@ z-index:900;
 margin-top:60px;
 margin-left:50%;
 float:left;
+}
+
+.message{
+position:fixed;
+top:800px;
 }
 
 .tool_controler:hover{
@@ -35,6 +41,10 @@ border-color:grey;
 z-index:900;
 }
 
+.nooverflow {
+overflow:hidden;
+}
+
 .slideshow {
 height:200px;
 }
@@ -43,10 +53,18 @@ height:200px;
 position:relative;
 }
 
-.ctrl{
-
+.bigimg{
 width:50px;
 height:50px;
+}
+
+.littleimg{
+width:20px;
+height:20px;
+}
+
+.dragctrl, .ctrl{
+z-index:9000;
 position:absolute;
 }
 
