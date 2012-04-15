@@ -182,7 +182,7 @@
 	function drag_drop_mouse_down(elt) {
 	 currentDragItem = elt;
 
-	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
+	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-elt.offsetHeight/4) && mouseX >= (elt.offsetLeft + elt.offsetWidth-elt.offsetWidth/4))
 	 {
 		resizing = true;
 		dragging = false;
@@ -221,25 +221,27 @@
 			
 			if(!currentDragItem.style.left)
 				currentDragItem.style.left = 0;
-
 			
+			var top = currentDragItem.offsetTop - currentDragItem.parentNode.offsetTop;
+			var left = currentDragItem.offsetLeft - currentDragItem.parentNode.offsetLeft;
+				
 			//deplace l element
-			if( (currentDragItem.offsetTop > 0 || (mouseY - decalY) > 0)
+			if( (top > 0 || mouseY > decalY)
 				&& 
-				((currentDragItem.offsetTop + currentDragItem.offsetHeight)  <  currentDragItem.offsetParent.offsetHeight || (mouseY - decalY) < 0)
+				(top+currentDragItem.offsetHeight < currentDragItem.parentNode.offsetHeight || (mouseY < decalY))
 				)
 				currentDragItem.style.top = parseInt(currentDragItem.style.top) + (mouseY - decalY);
 
 				
-			if( (currentDragItem.offsetLeft > 0 || (mouseX - decalX) > 0)
+			if( (left > 0 || mouseX > decalX)
 				&& 
-				((currentDragItem.offsetLeft + currentDragItem.offsetWidth) <  currentDragItem.offsetParent.offsetWidth  ||  (mouseX - decalX)< 0 ) 
+				(left+currentDragItem.offsetWidth < currentDragItem.parentNode.offsetWidth ||  (mouseX < decalX)) 
 				)
 				currentDragItem.style.left = parseInt(currentDragItem.style.left) + (mouseX - decalX);
 			
 			
 			
-			 Output("dragging");
+			 Output("dragging " + top + " " + currentDragItem.parentNode.offsetHeight );
 		}else if(resizing)
 		{	 document.body.style.cursor = "w-resize";
 			currentDragItem.style.width = currentDragItem.offsetWidth + (mouseX - decalX);
