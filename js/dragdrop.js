@@ -120,7 +120,7 @@
 	function setElementPosToMouse(elt){
 		var parentPos = getAbsolutePosition(elt.parentNode);
 
-		elt.style.position = "absolute";	
+		elt.style.position = "relative";	
 		elt.style.top = mouseY-(parentPos["top"]-document.body.scrollTop)-(elt.clientY/2)-120;
 		elt.style.left = mouseX-elt.clientWidth;
 		//alert(mouseY + " - " + (mouseY-(elt.parentNode.offsetTop-document.body.scrollTop)-elt.clientY) + " " +elt.parentNode.id+" " +elt.parentNode.offsetTop);
@@ -147,21 +147,52 @@
 		}
 	}
 	
+	function reverse(n) {          // Reverse the order of the children of Node n
+		var kids = n.childNodes;   // Get the list of children
+		var numkids = kids.length; // Figure out how many there are
+		for(var i = numkids-1; i >= 0; i--) {  // Loop through them backwards
+			var c = n.removeChild(kids[i]);    // Remove a child
+			n.appendChild(c);                  // Put it back at its new position
+		}
+	}
+
+	function reset(elt) {
+		dragging = false;
+		resizing = false;
+		
+		if(currentDragItem)
+		{
+			currentDragItem.style.border="";
+			currentDragItem = null;
+		}
+		//Output("stop dragging !");
+		decalY = 0;
+		decalX = 0;
+		
+		if(elt)
+			elt.style.border= "";
+			
+		document.body.style.cursor = "default";
+	
+	}
 	/**
 	* Movement management
 	**/
 	
 	function drag_drop_mouse_down(elt) {
 	 currentDragItem = elt;
-	 
+
 	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
 	 {
 		resizing = true;
-		Output("resizing! ");
+		dragging = false;
+		Output("resizing! down "+mouseY+ "  " + elt.offsetTop + " + " + elt.offsetHeight + "/" + mouseX+ " " + (elt.offsetLeft + elt.offsetWidth-10));
 	 }
 	 else
 	 {
 		dragging = true;
+		resizing = false;
+		Output("dragging down"+mouseY+ "  " + elt.offsetTop + " + " + elt.offsetHeight + "/" + mouseX+ " " + (elt.offsetLeft + elt.offsetWidth-10));
 	 }
 	
 	// coordinate = getAbsolutePosition(currentDragItem);
@@ -171,16 +202,7 @@
 	}
 	
 	function drag_drop_mouse_up(){
-		dragging = false;
-		resizing = false;
-		if(currentDragItem)
-		{
-			currentDragItem.style.border="";
-			currentDragItem = null;
-		}
-		//Output("stop dragging !");
-		decalY = 0;
-		decalX = 0;
+		reset();
 	}
 	
 	var i = 0;
@@ -190,7 +212,7 @@
 		mouseY = evt.clientY;
 		i++; 
 		if(dragging && currentDragItem != null)
-		{ 
+		{    document.body.style.cursor = "move";
 			currentDragItem.style.border="solid 2px blue";
 			
 			//initialise si undifined
@@ -215,35 +237,35 @@
 				)
 				currentDragItem.style.left = parseInt(currentDragItem.style.left) + (mouseX - decalX);
 			
-			decalY = mouseY;
-			decalX = mouseX;
+			
 			
 			 Output("dragging");
 		}else if(resizing)
-		{	
+		{	 document.body.style.cursor = "w-resize";
 			currentDragItem.style.width = currentDragItem.offsetWidth + (mouseX - decalX);
 			currentDragItem.style.height = currentDragItem.offsetHeight + (mouseY - decalY);
 			Output("resizing");
 		}
-		
+		decalY = mouseY;
+		decalX = mouseX;
 		//Output(mouseX + " - " + mouseY );
 	}
 
 	function drag_drop_mouse_over(elt) {
 			Output(mouseX + " - " + mouseY + " -> " +elt.offsetTop + " "+ (elt.offsetHeight-100));
-		if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
+		/**if(mouseY >= (elt.offsetTop + elt.offsetHeight-100) && mouseX >= (elt.offsetLeft + elt.offsetWidth-100))
 		{
 			 document.body.style.cursor = "w-resize";
 		}
 		else{
 			document.body.style.cursor = "move";
-		}
+		}**/
 	};
 	
 	function drag_drop_mouse_out(elt) {
-		elt.style.border= "";
-		document.body.style.cursor = "default";
-		drag_drop_mouse_up();
+	
+		if(!resizing)
+			reset(elt);
 	};
 	
 
@@ -300,7 +322,7 @@
 	{
 		var deleteButton = document.createElement("img");
 		deleteButton.src="img/delete.png";
-		deleteButton.setAttribute("class", "dragctrl bigimg");
+		deleteButton.setAttribute("class", "dragctrl bigimg left");
 		deleteButton.style.top =  elt.offsetHeight;
 		deleteButton.style.left = 0;
 		elt.appendChild(deleteButton);
@@ -322,12 +344,14 @@
 					break;
 				}
 			}
+		elt.setAttribute("onmousedown","if (event.preventDefault) event.preventDefault()");
 		
 		if(ctrl)
 		{
 			var moveButton = document.createElement("img");
 			moveButton.src="img/move.png";
 			moveButton.setAttribute("class", "dragctrl littleimg");
+
 			elt.appendChild(moveButton);
 			moveButton.style.top = -moveButton.offsetHeight;
 			moveButton.style.left = -moveButton.offsetWidth/2;
@@ -367,39 +391,46 @@
 	//EVENT HANDLERS
 	
 	function dragenter(evt) {
-
+		if(dragging || resizing)
+			return;
 	  evt.stopPropagation();
 	  evt.preventDefault();
 		
-	if(dragging || resizing)
-		return;
+	
 		
 	  this.style.border="solid 2px blue";
 	}
 	
 	function dragExit(evt) {
-	  evt.stopPropagation();
-	  evt.preventDefault();
+	 
 	  
 	  if(dragging || resizing)
 		return;
 		
+	 evt.stopPropagation();
+	  evt.preventDefault();
+	  
 	  this.style.border="";
 	}
 	
 	function noopHandler(evt) {
+	
+	if(dragging || resizing)
+		return;
+		
 	  evt.stopPropagation();
 	  evt.preventDefault();
 	}
 
 	function drop(evt) {
-	
+	if(dragging || resizing)
+		return;
+		
 	currentDragTarget = this;
 	evt.stopPropagation();
 	evt.preventDefault();
 	
-	if(dragging || resizing)
-		return;
+	
 	
 	if(disableNextDrag)	
 	{

@@ -50,6 +50,7 @@ function animator() {
 				this.slides.removeClass("animate");
 				this.slides.show();
 				this.slides.css("opacity","1");
+				obj.css("z-index","");
 			}
 			this.pause = !this.pause;
 	}
@@ -106,8 +107,9 @@ function animatorSlide() {
 	animator.call(this); // Héritage
 	
 	this.animin = function(obj){
-		obj.css('left', -obj.width());
+		obj.css('left', - obj.width());
 		obj.css("visibility","visible");
+		obj.css("z-index","10");
 		obj.show();
 		//this.currentSlide.show();
 		// On affiche la nouvelle image active progressivement
@@ -115,8 +117,9 @@ function animatorSlide() {
 	}
 	
 	this.animout = function(obj){
+		obj.css("z-index","");
 		obj.animate({"left":-obj.width()},this.options.animationSpeed, "linear", null);
-		obj.fadeOut(this.options.animationSpeed);
+		//obj.fadeOut(this.options.animationSpeed);
 	}
 }
 

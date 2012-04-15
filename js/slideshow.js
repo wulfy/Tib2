@@ -103,6 +103,7 @@ function slideshowObj() {
 		var emptyImage = document.createElement("img");
 		emptyImage.src = "img/empty.jpg";
 		emptyImage.setAttribute("class", "toremove");
+		emptyImage.setAttribute("onmousedown","if (event.preventDefault) event.preventDefault()");
 		var num = this.pages.length;
 		num++;
 		newpage.id = "slide"+num;
@@ -129,7 +130,7 @@ function slideshowObj() {
 		var slideshowObj = this;
 		editButton.src="img/edit.png";
 		
-		editButton.setAttribute("class", "ctrl bigimg");
+		editButton.setAttribute("class", "ctrl bigimg right");
 		
 		this.slideshow.appendChild(editButton);
 
@@ -139,17 +140,20 @@ function slideshowObj() {
 		editButton.addEventListener('click', function(evt){
 			slideshowObj.edit();
 		}, false);
+		
+		//reverse(this.slideshow);
 		/**moveButton.addEventListener('mousedown', function(evt){
 			setCurrentDraggingElement(slideshowObj.slideshow);
 
 		}, false);**/
 	}
-	
+		
 	this.edit = function()
 	{
 		//$.facebox({ ajax: 'edit.html' });
-		var html = " Largeur : <input type=\"input\" name=\"width\" value=\"\"><br>"+
+		var html = 	  " Largeur : <input type=\"input\" name=\"width\" value=\"\"><br>"+
 			          "Hauteur : <input type=\"input\" name=\"height\" value=\"\"><br>"+
+					  "Replier/deplier : <br>"+
 					  "ajouter une ligne <img src='img/add.png' id='add' class='ctrl littleimg'><br>";
 		
 		if(this.animator.pause){
@@ -160,15 +164,19 @@ function slideshowObj() {
 		}
 		html +="supprimer animation <img src='img/delete.png' id='delete' class='ctrl littleimg'><br>";
 		
+		html +="<hr><input type='button' id='save' value='appliquer' name='appliquer'><br>";
+		
 		var slideshowObj = this;
 		var jquerySlideshow = $(this.slideshow);
+
 		$(document).bind('close.facebox', function() {
-			//slideshow.width=$('#facebox input[name=width]').val();
+			/** //slideshow.width=$('#facebox input[name=width]').val();
 			//slideshow.height=$('#facebox input[name=width]').val() + "px";
 			jquerySlideshow.width($('#facebox input[name=width]').val());
 			jquerySlideshow.height($('#facebox input[name=height]').val());
 			jquerySlideshow.find('.ctrl').remove();
 			slideshowObj.addCtrl();
+			alert(jquerySlideshow.attr("id"));**/
 		});
 		var facebox = $.facebox(html);
 		var currentObj = this;
@@ -182,6 +190,16 @@ function slideshowObj() {
 		$("#facebox #delete").click(function() {
 				deleteElement(currentObj.slideshow,true);
 				$.facebox.close();
+		});
+		
+		$("#facebox #save").click(function() {
+							//slideshow.width=$('#facebox input[name=width]').val();
+			//slideshow.height=$('#facebox input[name=width]').val() + "px";
+			jquerySlideshow.width($('#facebox input[name=width]').val());
+			jquerySlideshow.height($('#facebox input[name=height]').val());
+			jquerySlideshow.find('.ctrl').remove();
+			slideshowObj.addCtrl();
+			$.facebox.close();
 		});
 		
 		$('#facebox input[name=width]').val(this.slideshow.offsetWidth);
