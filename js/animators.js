@@ -50,7 +50,7 @@ function animator() {
 				this.slides.removeClass("animate");
 				this.slides.show();
 				this.slides.css("opacity","1");
-				obj.css("z-index","");
+				this.slideshow.css("z-index","");
 			}
 			this.pause = !this.pause;
 	}
