@@ -63,9 +63,16 @@ width:20px;
 height:20px;
 }
 
+.right {
+float:right;
+}
+
+.left{
+float:left;
+}
 .dragctrl, .ctrl{
 z-index:9000;
-position:absolute;
+
 }
 
 .notDraggable {
@@ -77,8 +84,9 @@ position: absolute !important;
 }
 
 .page{
-position:relative;
+
 height:100%;
+width:100%;
 }
 
 .animate{
