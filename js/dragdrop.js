@@ -37,6 +37,9 @@
 	var dropbox = $id("draggable_area");
 	var currentDragTarget = dropbox;
 	var disableNextDrag = false;
+	var lastClick = null;
+	var lastelt;
+	
 	/**
 	TOOLS
 	**/
@@ -175,13 +178,48 @@
 		document.body.style.cursor = "default";
 	
 	}
+	
+	
+	function reRenderElement(elt)
+	{
+		elt.style.display = 'none';
+		elt.style.display = 'block';
+	
+	}
+	
+	
 	/**
 	* Movement management
 	**/
 	
+	function double_click(elt){
+	
+		var html = 	 elt.id +  " <br>Largeur : <input type=\"input\" name=\"width\" value=\"\"><br>"+
+			          "Hauteur : <input type=\"input\" name=\"height\" value=\"\"><br>"+
+					  "supprimer element <img src='img/delete.png' id='delete' class='ctrl littleimg'><br>";
+	  
+
+	   var jqueryelt = $(elt);
+		$(document).bind('close.facebox', function() {
+			jqueryelt.width($('#facebox input[name=width]').val());
+			jqueryelt.height($('#facebox input[name=height]').val());
+		});
+		
+		var facebox = $.facebox(html);
+		var currentObj = this;
+		$("#facebox #delete").click(function() {
+				deleteElement(elt,true);
+				$.facebox.close();
+		});
+		$('#facebox input[name=width]').val(elt.clientWidth);
+		$('#facebox input[name=height]').val(elt.clientHeight);
+	}
+	
 	function drag_drop_mouse_down(elt) {
 	 currentDragItem = elt;
+	 var time = null;
 
+	 
 	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-elt.offsetHeight/4) && mouseX >= (elt.offsetLeft + elt.offsetWidth-elt.offsetWidth/4))
 	 {
 		resizing = true;
@@ -194,10 +232,22 @@
 		resizing = false;
 		Output("dragging down"+mouseY+ "  " + elt.offsetTop + " + " + elt.offsetHeight + "/" + mouseX+ " " + (elt.offsetLeft + elt.offsetWidth-10));
 	 }
+	 
+
+
+		var time = new Date().getTime();
+
+	
+		if((time - lastClick ) < 200 && lastClick > 0 && (elt.id == lastelt.id ||elt.parentNode == lastelt))
+				double_click(elt);
+
+		lastClick = time;
+
 	
 	// coordinate = getAbsolutePosition(currentDragItem);
 	 decalY = mouseY;
 	 decalX = mouseX;
+	 lastelt = elt;
 	 //Output("dragging! "+ id + "offset X : " + currentDragItem.offsetLeft+ " offset Y : " + currentDragItem.offsetTop);
 	}
 	
@@ -246,6 +296,9 @@
 		{	 document.body.style.cursor = "w-resize";
 			currentDragItem.style.width = currentDragItem.offsetWidth + (mouseX - decalX);
 			currentDragItem.style.height = currentDragItem.offsetHeight + (mouseY - decalY);
+			//reRenderElement(currentDragItem);
+			/**$(currentDragItem.id).width((currentDragItem.offsetWidth + (mouseX - decalX)));
+			$(currentDragItem.id).height((currentDragItem.offsetHeight + (mouseY - decalY)));**/
 			Output("resizing");
 		}
 		decalY = mouseY;

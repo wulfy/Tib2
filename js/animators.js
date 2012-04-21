@@ -8,6 +8,7 @@ function animator() {
 	this.options;
 	this.slides;
 	this.pause;
+	this.name;
 	this.currentSlide;
 	this.defaults = {
 			delay: 3,
@@ -15,44 +16,43 @@ function animator() {
 			controls:false
 		};
 		
+	//this.init = function() {
+	this.options = this.defaults;
+	this.pause = true;
+
+
 	this.init = function(objectList) {
-		this.options = this.defaults;
-		this.pause = true;
 		this.slides = objectList;
 		this.currentSlide = this.slides.first();
-		//this.timer = setInterval(function(){currentObj.animate()}, (currentObj.options.delay*1000));
-		//this.startpause();
 	}
 	
 	this.startpause = function() {
-			var currentObj = this;
+			
 			if(this.pause)
 			{
-				this.slides.hide();
-				this.timer = setInterval(function(){currentObj.animate()}, (currentObj.options.delay*1000));
-				this.slides.find(".draggable").removeClass("draggable").addClass("notDraggable");
-				this.slides.removeClass("bordered");
-				this.slides.addClass("animate");
-				this.currentSlide = this.slides.first();
+				this.start() ;
 			}
 			else
-			{
-				this.slides.show();
-				this.slides.addClass("bordered");
-				
+			{			
+				this.stop();
+			}
+			this.pause = !this.pause;
+	}
+	
+	this.start = function() {
+		var currentObj = this;
+		
+		this.timer = setInterval(function(){currentObj.animate()}, (currentObj.options.delay*1000));
+		this.slides.addClass("animate");
+		this.currentSlide = this.slides.first();
+	}
+	
+	this.stop = function() {
 				if(this.timer)
 					clearInterval(this.timer);
 				
 				if(this.currentSlide)				
 					this.currentSlide.removeClass("active");
-
-				this.slides.find(".notDraggable").removeClass("notDraggable").addClass("draggable");
-				this.slides.removeClass("animate");
-				this.slides.show();
-				this.slides.css("opacity","1");
-				this.slideshow.css("z-index","");
-			}
-			this.pause = !this.pause;
 	}
 	
 	this.animate = function(){
@@ -86,13 +86,15 @@ function animator() {
 	this.animout = function(obj){
 	//todefine in child class
 	}
-	
+	this.getName = function(){
+		return this.name;
+	}
 }
 
 function animatorFade() {
 
 	animator.call(this); // Héritage
-	
+	this.name = "Fade";
 	this.animin = function(obj) {
 		obj.fadeIn(this.options.animationSpeed);
 	}
@@ -105,6 +107,7 @@ function animatorFade() {
 function animatorSlide() {
 
 	animator.call(this); // Héritage
+	this.name = "Slide";
 	
 	this.animin = function(obj){
 		obj.css('left', - obj.width());
@@ -126,6 +129,7 @@ function animatorSlide() {
 function animatorAlternate() {
 
 	animator.call(this); // Héritage
+	this.name = "Alternate";
 	
 	this.animin = function(obj){
 		this.currentSlide.css("opacity","0");
