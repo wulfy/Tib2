@@ -1,6 +1,6 @@
 #draggable_area {
 width:100%;
-height:100%;
+height:800px;
 position:relative;
 /*border: solid 1px grey;*/
 }
@@ -30,15 +30,29 @@ top:800px;
 	-o-transform:rotate(-25deg); //Opera
 }
 
-.bordered{
+.borderedYellow{
+border-style:dashed;
+border-width:2px;
+border-color:yellow;
+}
+
+.borderedGrey{
 border-style:dashed;
 border-width:2px;
 border-color:grey;
+}
 
+.opened{
+z-index:100 !important;
+background-color:white;
+}
+
+img {
+z-index:10;
 }
 
 .overall{
-z-index:900;
+z-index:900 !important;
 }
 
 .nooverflow {
@@ -47,6 +61,7 @@ overflow:hidden;
 
 .slideshow {
 height:200px;
+z-index:1;
 }
 
 .draggable {
@@ -71,8 +86,7 @@ float:right;
 float:left;
 }
 .dragctrl, .ctrl{
-z-index:9000;
-
+z-index:900 !important;
 }
 
 .notDraggable {
@@ -84,9 +98,9 @@ position: absolute !important;
 }
 
 .page{
-
 height:100%;
 width:100%;
+z-index:10;
 }
 
 .animate{
