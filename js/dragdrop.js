@@ -143,10 +143,12 @@
 	
 	function deleteTemporaryImage(elt){
 		var todelete = elt.getElementsByClassName("toremove");
+		var eltToDelete;
 		
-		for(var i in todelete)
+		for(var i=0;i< todelete.length; i++)
 		{	
-			elt.removeChild(todelete[i]);
+			if(todelete[i])
+				elt.removeChild(todelete[i]);
 		}
 	}
 	
@@ -219,6 +221,7 @@
 	 currentDragItem = elt;
 	 var time = null;
 
+	
 	 
 	 if(mouseY >= (elt.offsetTop + elt.offsetHeight-elt.offsetHeight/4) && mouseX >= (elt.offsetLeft + elt.offsetWidth-elt.offsetWidth/4))
 	 {
@@ -233,13 +236,14 @@
 		Output("dragging down"+mouseY+ "  " + elt.offsetTop + " + " + elt.offsetHeight + "/" + mouseX+ " " + (elt.offsetLeft + elt.offsetWidth-10));
 	 }
 	 
-
-
 		var time = new Date().getTime();
-
-	
-		if((time - lastClick ) < 200 && lastClick > 0 && (elt.id == lastelt.id ||elt.parentNode == lastelt))
+		
+		if(lastelt)
+		{
+			//alert("elt id:" + elt.id  + " latest " + lastelt.id );
+			if((time - lastClick ) < 200 && lastClick > 0 && (elt.id == lastelt.id ||elt.parentNode == lastelt))
 				double_click(elt);
+		}
 
 		lastClick = time;
 
@@ -383,6 +387,7 @@
 		elt.appendChild(deleteButton);
 		
 		deleteButton.addEventListener('mousedown', function(evt){
+		evt.stopPropagation();
 			deleteElement(elt,true);
 		}, false);
 	}
@@ -417,7 +422,8 @@
 		}
 			elt.addEventListener('mousedown', function(evt){
 				drag_drop_mouse_down(elt);
-			}, true);
+				 evt.stopPropagation();
+			}, false);
 			elt.addEventListener('mouseover', function(evt){
 				drag_drop_mouse_over(elt);
 			}, true);

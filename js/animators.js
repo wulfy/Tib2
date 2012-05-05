@@ -36,7 +36,6 @@ function animator() {
 			{			
 				this.stop();
 			}
-			this.pause = !this.pause;
 	}
 	
 	this.start = function() {
@@ -45,14 +44,22 @@ function animator() {
 		this.timer = setInterval(function(){currentObj.animate()}, (currentObj.options.delay*1000));
 		this.slides.addClass("animate");
 		this.currentSlide = this.slides.first();
+		this.currentSlide.show();
+		
+		this.pause = false;
 	}
 	
 	this.stop = function() {
+	
+				this.reset();
+				
 				if(this.timer)
 					clearInterval(this.timer);
 				
 				if(this.currentSlide)				
 					this.currentSlide.removeClass("active");
+					
+				this.pause = true;
 	}
 	
 	this.animate = function(){
@@ -89,6 +96,15 @@ function animator() {
 	this.getName = function(){
 		return this.name;
 	}
+	
+	this._reset = function(){
+		this.slides.hide();
+		this.reset();
+	}
+	
+	this.reset = function(){
+	//todefine in child class
+	}
 }
 
 function animatorFade() {
@@ -124,6 +140,10 @@ function animatorSlide() {
 		obj.animate({"left":-obj.width()},this.options.animationSpeed, "linear", null);
 		//obj.fadeOut(this.options.animationSpeed);
 	}
+	
+	this.reset = function(){
+			this.slides.css("left","");
+	}
 }
 
 function animatorAlternate() {
@@ -132,18 +152,23 @@ function animatorAlternate() {
 	this.name = "Alternate";
 	
 	this.animin = function(obj){
-		this.currentSlide.css("opacity","0");
-		this.currentSlide.css("visibility","visible");
-		//this.currentSlide.show();
+		obj.css("opacity","0");
+		//obj.css("visibility","visible");
+		obj.show();
 		// On affiche la nouvelle image active progressivement
-		this.currentSlide.animate({"opacity":1},300, "linear", null);
+		obj.animate({"opacity":1},300, "linear", null);
 	}
 	
 	this.animout = function(obj){
-		this.currentSlide.css("opacity","1");
-		this.currentSlide.animate({"opacity":0},300, "linear", null);
-		this.currentSlide.css("visibility","hidden");
-		//this.currentSlide.hide();
+		obj.css("opacity","1");
+		obj.animate({"opacity":0},300, "linear", null);
+		//obj.css("visibility","hidden");
+		obj.hide();
+	}
+	
+	this.reset = function(){
+		this.slides.css("opacity",1);
+		//this.slides.css("opacity",1);
 	}
 }
 

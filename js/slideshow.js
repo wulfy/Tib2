@@ -16,11 +16,28 @@ function slideshowObj() {
 	this.animator;
 	this.jquerySlideshow;
 	
-	this.init = function() {
+	var colors = ["#990099","#3300CC","#CC0099","#000033","#990033","#000000"];                
+	 
+	
+	this.init = function(parentId,slideshowId,addCtrlButtons) {
+		if (typeof parentId == "undefined") {
+				parentId = "draggable_area";
+		}
+		
+		if (typeof addCtrlButtons == "undefined") {
+				addCtrlButtons = true;
+		}
+		
 		var nbSlideshow = $(".slideshow").length;
 		this.slideshow = document.createElement("div");
-		this.slideshow.id="slideshow"+nbSlideshow;
-		$id("draggable_area").appendChild(this.slideshow);
+		
+		if (typeof slideshowId == "undefined") {
+				slideshowId = "slideshow"+nbSlideshow;
+		}
+
+		this.slideshow.id=slideshowId;
+		
+		$id(parentId).appendChild(this.slideshow);
 		this.slideshow.className = "draggable slideshow borderedYellow";
 		this.jquerySlideshow = $(this.slideshow);
 		
@@ -38,7 +55,9 @@ function slideshowObj() {
 		this.open = true;
 		//this.timer = setInterval(function(){currentObj.nextElt()}, (currentObj.options.delay*1000));
 		
-		this.addCtrl();
+		if(addCtrlButtons)
+			this.addCtrl();
+			
 		this.setdraggable();
 		this.animator = new animatorAlternate();
 	}
@@ -54,24 +73,40 @@ function slideshowObj() {
 		 // On cache de manière progressive l'image active
 	}
 	
-	this.addPage = function()
+	this.addPage = function(addCtrlButtons)
 	{
-		 
+		if (typeof addCtrlButtons == "undefined") {
+				addCtrlButtons = true;
+		}
+
 		var newpage = document.createElement("div");
-		var emptyImage = document.createElement("img");
-		emptyImage.src = "img/empty.jpg";
-		emptyImage.setAttribute("class", "toremove");
-		emptyImage.setAttribute("onmousedown","if (event.preventDefault) event.preventDefault()");
+		//var emptyImage = document.createElement("img");
+		var emptyText = document.createElement("div");
+		//emptyImage.src = "img/empty.jpg";
+		
+		//emptyImage.setAttribute("class", "toremove");
+		//emptyImage.setAttribute("onmousedown","if (event.preventDefault) event.preventDefault()");
+		emptyText.setAttribute("class", "toremove");
 		var num = this.pages.length;
 		num++;
 		newpage.id = "slide"+num;
+		
+		var rand = Math.floor(Math.random()*colors.length);
+		var jqueryEmptyText = $(emptyText);
+		jqueryEmptyText.html("<h1>slide"+num+"</h1><i>Pas d'image!</i>");
+		jqueryEmptyText.css("background-color", colors[rand]);
+
 		newpage.setAttribute("class", "page borderedGrey");
 		
-		newpage.appendChild(emptyImage);
-		addDeleteButton(newpage);
+		//newpage.appendChild(emptyImage);
+		newpage.appendChild(emptyText);
+		
+		if(addCtrlButtons)
+			addDeleteButton(newpage);
 		
 		addDragEvent(newpage);
 		this.slideshow.appendChild(newpage);
+		
 		
 		this.pages = this.jquerySlideshow.find(".page");
 		this.animator.init(this.pages);
@@ -102,6 +137,11 @@ function slideshowObj() {
 	{
 		//$.facebox({ ajax: 'edit.html' });
 		var animatorName = this.animator.getName();
+		var currentObj = this;
+		var selectedAnimator;
+		currentObj.animator.stop();
+		currentObj.openPages();
+		
 		var html = 	  " Largeur : <input type=\"input\" name=\"width\" value=\"\"><br>"+
 			          "Hauteur : <input type=\"input\" name=\"height\" value=\"\"><br>"+
 					  "Animation : <select id='animationselector'>"+
@@ -110,8 +150,12 @@ function slideshowObj() {
 									  "<option value='Slide'>Slide</option>"+
 									  "<option value='Alternate'>Alternate</option>"+
 									"</select> <br>"+
+					  "<div id='animatorexample'> </div>"+
 					  "Replier/deplier : <img src='openclose.png' id='openclose' class='ctrl littleimg'> <br>"+
-					  "ajouter une ligne <img src='img/add.png' id='add' class='ctrl littleimg'><br>";
+					  "ajouter une ligne <img src='img/add.png' id='add' class='ctrl littleimg'><br>" +
+					  "<script>var exampleSlideshow = new slideshowObj();"+
+						" exampleSlideshow.init('animatorexample','slideshowExample',false); exampleSlideshow.addPage(false);  exampleSlideshow.addPage(false);   exampleSlideshow.closePages();"+
+						"exampleSlideshow.animator = new animator"+animatorName+"(); exampleSlideshow.animator.init(exampleSlideshow.pages) ; exampleSlideshow.animator.start();</script>" ;
 		
 		if(this.animator.pause){
 			html +="lancerAnimation <img src='img/run.png' id='startpause' class='ctrl littleimg'><br>";		  
@@ -136,17 +180,21 @@ function slideshowObj() {
 			alert(jquerySlideshow.attr("id"));**/
 		});
 		var facebox = $.facebox(html);
-		var currentObj = this;
+		
 		$("#facebox #add").click(function() {
 			currentObj.addPage();	
 		});
-		$("#facebox #animationselector").click(function() {
+		$("#facebox #animationselector").change(function() {
 			var value = $(this).val();
 			if(animatorName != value)
 			{
-				currentObj.animator.stop();	
-				currentObj.animator = eval("new animator"+value+"()");
-				currentObj.animator.init(currentObj.pages);
+				selectedAnimator = value;
+				
+				exampleSlideshow.closePages();
+				exampleSlideshow.animator.stop();
+				exampleSlideshow.animator  = eval("new animator"+value+"()");
+				exampleSlideshow.animator.init(exampleSlideshow.pages);
+				exampleSlideshow.animator.start();	
 			}
 		});
 		$("#facebox #openclose").click(function() {
@@ -175,8 +223,16 @@ function slideshowObj() {
 			//slideshow.height=$('#facebox input[name=width]').val() + "px";
 			jquerySlideshow.width($('#facebox input[name=width]').val());
 			jquerySlideshow.height($('#facebox input[name=height]').val());
-			jquerySlideshow.find('.ctrl').remove();
-			slideshowObj.addCtrl();
+			//jquerySlideshow.find('.ctrl').remove();
+			//slideshowObj.addCtrl();
+			
+			if(selectedAnimator)
+			{
+				currentObj.animator.stop();	
+				currentObj.animator = eval("new animator"+selectedAnimator+"()");
+				currentObj.animator.init(currentObj.pages);
+			}
+			
 			$.facebox.close();
 		});
 		
@@ -220,6 +276,10 @@ function slideshowObj() {
 		this.currentSlide = this.pages.first();
 		this.jquerySlideshow.removeClass("opened").addClass("borderedYellow");
 		this.open = false;
+	}
+	
+	this.getId = function() {
+		return this.slideshow.id;
 	}
 	
 }
