@@ -19,13 +19,17 @@ function slideshowObj() {
 	var colors = ["#990099","#3300CC","#CC0099","#000033","#990033","#000000"];                
 	 
 	
-	this.init = function(parentId,slideshowId,addCtrlButtons) {
+	this.init = function(parentId,slideshowId,addCtrlButtons,draggable) {
 		if (typeof parentId == "undefined") {
 				parentId = "draggable_area";
 		}
 		
 		if (typeof addCtrlButtons == "undefined") {
 				addCtrlButtons = true;
+		}
+		
+		if (typeof draggable == "undefined") {
+				draggable = true;
 		}
 		
 		var nbSlideshow = $(".slideshow").length;
@@ -57,8 +61,10 @@ function slideshowObj() {
 		
 		if(addCtrlButtons)
 			this.addCtrl();
+		
+		if(draggable)
+			this.setdraggable();
 			
-		this.setdraggable();
 		this.animator = new animatorAlternate();
 	}
 	
@@ -150,11 +156,11 @@ function slideshowObj() {
 									  "<option value='Slide'>Slide</option>"+
 									  "<option value='Alternate'>Alternate</option>"+
 									"</select> <br>"+
-					  "<div id='animatorexample'> </div>"+
+					  "<div id='animatorexample'> </div><br><br>"+
 					  "Replier/deplier : <img src='openclose.png' id='openclose' class='ctrl littleimg'> <br>"+
 					  "ajouter une ligne <img src='img/add.png' id='add' class='ctrl littleimg'><br>" +
 					  "<script>var exampleSlideshow = new slideshowObj();"+
-						" exampleSlideshow.init('animatorexample','slideshowExample',false); exampleSlideshow.addPage(false);  exampleSlideshow.addPage(false);   exampleSlideshow.closePages();"+
+						" exampleSlideshow.init('animatorexample','slideshowExample',false,false); exampleSlideshow.addPage(false);  exampleSlideshow.addPage(false);   exampleSlideshow.closePages();"+
 						"exampleSlideshow.animator = new animator"+animatorName+"(); exampleSlideshow.animator.init(exampleSlideshow.pages) ; exampleSlideshow.animator.start();</script>" ;
 		
 		if(this.animator.pause){
